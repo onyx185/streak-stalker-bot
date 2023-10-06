@@ -28,3 +28,11 @@ async def user_info(ctx, member: discord.Member = None):
     embed.add_field(name="Eligibility", value="Not Eligible")
 
     await ctx.send("", embed=embed)
+
+@client.command()
+@commands.has_any_role("Administrators")
+async def menu(ctx, member: discord.Member = None):
+    try: 
+        print("menu")
+    except x:
+        print("no role")

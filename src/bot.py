@@ -6,5 +6,4 @@ from src.events import *
 
 def run_discord_bot():
     token = os.getenv('token')
-
     client.run(token)
