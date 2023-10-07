@@ -23,3 +23,4 @@ client = setup_configure()
 async def on_ready():
     print(f'{client.user} is now running')
     print('--------------------------------')
+
