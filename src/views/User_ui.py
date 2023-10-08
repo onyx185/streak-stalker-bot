@@ -1,5 +1,6 @@
 import discord
-
+from datetime import datetime
+from src.database.user_data import add_update_to_database
 
 class MyView(discord.ui.View):
     def __init__(self):
@@ -23,37 +24,96 @@ class MyView(discord.ui.View):
         await interaction.response.edit_message(view=self)
         await interaction.channel.send("okay")
 
+class ChallengesList(discord.ui.View):
 
-class MyModal(discord.ui.Modal):
-    def __init__(self, *args, **kwargs) -> None:
+    challenges_list_from_db = ["30 Days of Coding Challenge", "Open Quest Challenge"]
+
+    @discord.ui.select(
+        placeholder="Choose the challenge to participate",
+        options=[discord.SelectOption(label=challenge) for challenge in challenges_list_from_db]
+    )
+
+    async def challenge_selected(self, interaction, select_item: discord.ui.Select):
+        data={}
+        data['Username'] = interaction.user.name
+        data['ChallengeChoosen'] = select_item.values[0]
+
+        #get challenges info from database
+        #check if user has already opted for the challenge, if yes send message you have clready opted for the challenge
+        #if not add challenge name top this user
+
+        already_opted = True
+        new_user = False
+
+        if already_opted:
+            embed = discord.Embed(title=data['Username'], color=discord.Colour.red())
+            embed.add_field(name=f"",
+                            value=f"You have already enrolled for the {data['ChallengeChoosen']}")
+
+            await interaction.response.send_message("", embed=embed)
+
+        if new_user:
+            rules = ["Post an updated on the challenge on daily basis using **$PostUpdate** command",
+                     "Maintain Streak to complete the Challenge"]
+
+            embed = discord.Embed(title=data['Username'], color=discord.Colour.green())
+
+            embed.add_field(name="",
+                            value=f"You have now started the {data['ChallengeChoosen']}   🎉",
+                            inline=True)
+
+            embed.add_field(name="  ", value="   ",inline=False)
+
+            embed.add_field(name="Rules", value="", inline=False)
+
+            for ind, msg in enumerate(rules):
+                embed.add_field(name='', value='✅ '+msg, inline=False)
+
+            await interaction.response.send_message("", embed=embed)
+
+
+
+class PostUpdateModal(discord.ui.Modal):
+    def __init__(self,username, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.all_fields = ["Short Input", "Long Input"]
-        self.add_item(discord.ui.TextInput(label=self.all_fields[0]))
-        self.add_item(discord.ui.TextInput(label=self.all_fields[1], style=discord.TextStyle.long))
+        username = username
 
+        self.all_fields = ["User Name", "Date", "Hashtags", "Social Media Links", "Message"]
+
+        self.add_item(discord.ui.TextInput(label=self.all_fields[0], placeholder="Discord Username",
+                                           default=username, required=True))
+        self.add_item(discord.ui.TextInput(label=self.all_fields[1], placeholder="Post Date",
+                                           default=datetime.now().strftime("%Y-%m-%d"),required=True))
+        self.add_item(discord.ui.TextInput(label=self.all_fields[2], placeholder="Enter eligible hastags",
+                                           required=False))
+        self.add_item(discord.ui.TextInput(label=self.all_fields[3], placeholder="Social Media Links",
+                                           required=False))
+        self.add_item(discord.ui.TextInput(label=self.all_fields[4], style=discord.TextStyle.long,
+                                           required=False,
+                                           placeholder="Your message"))
 
     async def on_submit(self, interaction):
         data = {}
-        data['Submitted_by'] = interaction.user.name
+        data['Discord_user'] = interaction.user.name
+        data['Discord_user_id'] = interaction.user.id
         data['Submitted_in_channel'] = interaction.channel.name
-        data['Submitted_at'] = interaction.created_at
 
         for ind, field in enumerate(self.all_fields):
-            data[field] = interaction.data['components'][ind]['components'][0]['value']
+            data[field.replace(" ", "_")] = interaction.data['components'][ind]['components'][0]['value']
 
-        print(data)
+        #add record to database
+        add_update_to_database(data)
+
 
         embed = discord.Embed(
-            title="Get Starated",
-            description="Embeds are super easy, barely an inconvenience.",
-            color=discord.Colour.blurple(),  # Pycord provides a class with default colors you can choose from
+            title="Daily Updates",
+            color=discord.Colour.green(),  # Pycord provides a class with default colors you can choose from
         )
 
-        embed.add_field(name=f"{data['Submitted_by']}",
-                        value="")
+        embed.add_field(name=f"{data['Discord_user']}",
+                        value="Thank you for posting a update")
 
-        embed.add_field(name="Inline Field 1", value="Inline Field 1", inline=True)
 
         await interaction.response.send_message("", embed=embed)
 
@@ -62,24 +122,7 @@ class MyModal(discord.ui.Modal):
 
 
 
-class ModalView(discord.ui.View):
-    @discord.ui.button(label="Send Modal", style=discord.ButtonStyle.primary)
+class UpdateModal(discord.ui.View):
+    @discord.ui.button(label="Post Update", style=discord.ButtonStyle.primary)
     async def button_callback(self, interaction, button):
-        await interaction.response.send_modal(MyModal(title="Modal via Button"))
-
-
-class MySelect(discord.ui.View):
-    answer1 = None
-    answer2 = None
-
-    @discord.ui.select(
-        placeholder="Choose the age",
-        options=[
-            discord.SelectOption(label="95"),
-            discord.SelectOption(label="105"),
-        ]
-    )
-    async def find_age(self, interaction, select_item: discord.ui.Select):
-        print(select_item.values)
-        await interaction.response.send_message("Thanks")
-
+        await interaction.response.send_modal(PostUpdateModal(username=interaction.user.name, title="Daily Updates"))

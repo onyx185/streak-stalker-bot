@@ -12,42 +12,11 @@ class StartChallenge(commands.Cog):
 
     @commands.command()
     async def StartChallenge(self, ctx):
-        await ctx.send("Hello")
+        await ctx.send(view=ChallengesList())
 
     @commands.command()
-    async def ViewProgress(self, ctx):
-        await ctx.send("Hello", view=MyView())
-
-
-    # sends message to other channel
-    @commands.command()
-    async def modal(self, ctx):
-        await ctx.send(view=ModalView())
-
-    @commands.command()
-    async def hello(self, ctx):
-        embed = discord.Embed(
-            title="My Amazing Embed",
-            description="Embeds are super easy, barely an inconvenience.",
-            color=discord.Colour.blurple(),  # Pycord provides a class with default colors you can choose from
-        )
-        embed.add_field(name="A Normal Field",
-                        value="A really nice field with some information. **The description as well as the fields support markdown!**")
-
-        embed.add_field(name="Inline Field 1", value="Inline Field 1", inline=True)
-        embed.add_field(name="Inline Field 2", value="Inline Field 2", inline=True)
-        embed.add_field(name="Inline Field 3", value="Inline Field 3", inline=True)
-
-        embed.set_footer(text="Footer! No markdown here.")  # footers can have icons too
-        embed.set_author(name="Pycord Team", icon_url="https://example.com/link-to-my-image.png")
-        embed.set_thumbnail(url="https://example.com/link-to-my-thumbnail.png")
-        embed.set_image(url="https://example.com/link-to-my-banner.png")
-
-        await ctx.send("Hello! Here's a cool embed.", embed=embed)  # Send the embed with some text
-
-    @commands.command()
-    async def select(self, ctx):
-        await ctx.send(view=MySelect())
+    async def PostUpdate(self, ctx):
+        await ctx.send(view=UpdateModal())
 
 
 async def setup(client):
