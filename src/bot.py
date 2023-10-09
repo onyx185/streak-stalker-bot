@@ -1,13 +1,14 @@
 import discord
 from discord.ext import commands
 import os
+from .constant import *
 
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True  # in order to access the messages
 
 # commands with '$' prefix is used to call the bot for specific operation
-client = commands.Bot(command_prefix='$', intents=intents)
+client = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 
 @client.command()
@@ -70,3 +71,16 @@ async def on_ready():
                 print(f'Loaded {file}')
             except Exception as e:
                 print(f'Failed to load {file}: {e}')
+                
+@client.event
+async def on_command(ctx: commands.context):
+    print(color.YELLOW + f'Command:{COMMAND_PREFIX}{ctx.command}' + color.END)
+    print(color.CYAN + f'Command arguments: {ctx.kwargs}' + color.END)
+    print(color.CYAN + f'executed by {ctx.author}' + color.END)
+    
+@client.event
+async def on_command_error(ctx: commands.context, error:commands.CommandError):
+    print(color.RED + f'Command:{COMMAND_PREFIX}{ctx.command}' + color.END)
+    print(color.CYAN + f'Command arguments: {ctx.kwargs}' + color.END)
+    print(color.CYAN + f'executed by {ctx.author}' + color.END)
+    print(color.CYAN + f'Error {error}' + color.END)

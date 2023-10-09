@@ -7,6 +7,9 @@ name = "pypi"
 discord = "*"
 python-dotenv = "*"
 
+[scripts]
+bot = "pipenv run python -m main"
+
 [dev-packages]
 
 [requires]

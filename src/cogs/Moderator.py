@@ -1,8 +1,12 @@
 import discord
 from discord.ext import commands
+from typing import List
+
+# from views.menu_view import MenuView
+from src.views.mod_menu_view import ModMenuView
 
 
-class CreateChallenge(commands.Cog):
+class ModeratorCog(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -11,25 +15,12 @@ class CreateChallenge(commands.Cog):
         print("Bot is online")
 
     @commands.command()
-    async def Create(self, ctx):
-        await ctx.send("Hello")
-
-    @commands.command()
-    async def Edit(self, ctx):
-        await ctx.send("Hello")
-
-    @commands.command()
-    async def Delete(self, ctx):
-        await ctx.send("Hello")
-
-    @commands.command()
-    async def ViewParticipants(self, ctx):
-        await ctx.send("Hello")
+    async def menu(self, ctx: commands.context):
+        try:
+            await ctx.send(view=ModMenuView(ctx))
+        except x:
+            print("no role")
 
 
-
-async def setup(client):
-    await client.add_cog(CreateChallenge(client))
-
-
-
+async def setup(client: commands.Bot):
+    await client.add_cog(ModeratorCog(client))
