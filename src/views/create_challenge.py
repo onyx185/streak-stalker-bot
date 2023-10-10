@@ -4,8 +4,10 @@ from discord import ui, Interaction
 from typing import List, Any
 from discord._types import ClientT
 from datetime import datetime
+import uuid
 from src.data.create_challenge import MODAL_FIELDS
 from src.types.create_challenge_types import ChallengeDocType
+from src.database.create_challenge import insert_challenge
 
 
 class ViewChannels(discord.ui.View):
@@ -31,11 +33,7 @@ class SelectChannels(discord.ui.Select):
 
     async def callback(self, interaction: Interaction[ClientT]):
         try:
-            selected_option = {}
-            for option in self.options:
-                if str(option.value) == str(self.values[0]):
-                    selected_option = {
-                        'label': option.label, 'value': option.value}
+            selected_option = self.get_selected_option()
             if not selected_option:
                 raise Exception()
             modal_title = "Creating Challenge in {0} Channel".format(
@@ -44,6 +42,16 @@ class SelectChannels(discord.ui.Select):
                 ChallengeModal(self.ctx, selected_option, title=modal_title))
         except Exception as e:
             print(f'{e}')
+    
+    def get_selected_option(self):
+        selected_option = {}
+        for option in self.options:
+                if str(option.value) == str(self.values[0]):
+                    selected_option = {
+                        'label': option.label, 'value': option.value}
+        return selected_option
+                    
+                    
 
 
 class ChallengeModal(discord.ui.Modal):
@@ -66,9 +74,11 @@ class ChallengeModal(discord.ui.Modal):
             key = str(field['components'][0]['custom_id']).strip()
             value = str(field['components'][0]['value']).strip()
             doc[key]= value
-        doc['challenge_id']='5765'
+        doc['challenge_id']= str(uuid.uuid4())
         doc['created_by']= interaction.user.id
         doc['created_date'] = datetime.utcnow().isoformat() + "Z"
+        response = insert_challenge(doc)
+        print(response)
         await interaction.response.send_message("Challenge Registered")
             
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
