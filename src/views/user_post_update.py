@@ -77,9 +77,9 @@ class PostUpdateModal(discord.ui.Modal):
 
 
 class ChallengesDropDownForPostingUpdate(discord.ui.Select):
-    def __init__(self, server_id, user_id):
-        self.server_id = server_id
-        self.user_id = user_id
+    def __init__(self, ctx):
+        self.server_id = ctx.guild.id
+        self.user_id = ctx.author.id
 
         self.challenge_details = ChallengeDetails(server_id=self.server_id)
 
@@ -138,6 +138,6 @@ class ChallengesDropDownForPostingUpdate(discord.ui.Select):
 
 
 class UpdateModal(discord.ui.View):
-    def __init__(self, server_id, user_id):
+    def __init__(self, ctx):
         super().__init__()
-        self.add_item(ChallengesDropDownForPostingUpdate(server_id=server_id, user_id=user_id))
+        self.add_item(ChallengesDropDownForPostingUpdate(ctx))

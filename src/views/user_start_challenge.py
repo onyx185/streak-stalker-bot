@@ -8,9 +8,9 @@ from src.database.user_data import ChallengeDetails, UserChallenges
 
 
 class ChallengesDropDown(discord.ui.Select):
-    def __init__(self, server_id, user_id):
-        self.server_id = server_id
-        self.user_id = user_id
+    def __init__(self, ctx):
+        self.server_id = ctx.guild.id
+        self.user_id = ctx.author.id
 
         self.challenge_details = ChallengeDetails(server_id=self.server_id)
 
@@ -78,7 +78,7 @@ class ChallengesDropDown(discord.ui.Select):
 
 class ChallengesList(discord.ui.View):
 
-    def __init__(self, server_id, user_id):
+    def __init__(self, ctx):
         super().__init__()
-        self.add_item(ChallengesDropDown(server_id=server_id, user_id=user_id))
+        self.add_item(ChallengesDropDown(ctx))
 

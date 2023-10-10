@@ -7,6 +7,13 @@ with open("./src/database/dummydata.json", 'r') as file:
     dummy_data = json.loads(file.read())
 
 
+def get_servers_registered_for_challenge(server_id: int|str):
+    for dum in dummy_data:
+        if str(server_id) in dum['server_id']:
+            return True
+
+    return False
+
 class ChallengeDetails:
     def __init__(self, server_id: str | int):
         self.server_id = str(server_id)

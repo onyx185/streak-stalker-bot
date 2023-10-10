@@ -18,7 +18,7 @@ class ModeratorCog(commands.Cog):
     async def menu(self, ctx: commands.context):
         try:
             await ctx.send(view=ModMenuView(ctx))
-        except x:
+        except Exception as e:
             print("no role")
 
 

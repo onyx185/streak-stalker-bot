@@ -1,6 +1,7 @@
 from discord.ext import commands
 from src.views.user_start_challenge import *
 from src.views.user_post_update import *
+from src.database.user_data import get_servers_registered_for_challenge
 
 
 class StartChallenge(commands.Cog):
@@ -13,14 +14,36 @@ class StartChallenge(commands.Cog):
 
     @commands.command()
     async def StartChallenge(self, ctx):
-        await ctx.send(view=ChallengesList(server_id=ctx.guild.id,
-                                           user_id=ctx.author.id))
+        server_has_challenge = get_servers_registered_for_challenge(ctx.guild.id)
+        if server_has_challenge:
+            await ctx.send(view=ChallengesList(ctx))
+        else:
+            embed = discord.Embed(
+                title="No Challenges Found",
+                color=discord.Colour.red(),  # Pycord provides a class with default colors you can choose from
+            )
+
+            embed.add_field(name=f"Oh no challenges",
+                            value="This server has no challenges created. Please create challenges.")
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def PostUpdate(self, ctx):
-        await ctx.send("Choose the challenge you want to update the post for",
-                       view=UpdateModal(server_id=ctx.guild.id,
-                                           user_id=ctx.author.id))
+        server_has_challenge = get_servers_registered_for_challenge(ctx.guild.id)
+
+        if server_has_challenge:
+            await ctx.send("Choose the challenge you want to update the post for",
+                           view=UpdateModal(ctx))
+        else:
+            embed = discord.Embed(
+                title="No Challenges Found",
+                color=discord.Colour.red(),  # Pycord provides a class with default colors you can choose from
+            )
+
+            embed.add_field(name=f"Oh no challenges",
+                            value="This server has no challenges created. Please create challenges.")
+            await ctx.send(embed=embed)
+
 
 
 async def setup(client):
