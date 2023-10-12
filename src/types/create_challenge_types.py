@@ -10,10 +10,10 @@ ChannelOptionType = TypedDict(
 class ChallengeDocType(TypedDict):
     challenge_id: str
     server_id: int
-    challenge_name : str
+    challenge_name: str
     start_date: str
     end_date: str
-    hashtag: str
+    hashtags: str
     platform: str
     created_by: int
     created_date: str

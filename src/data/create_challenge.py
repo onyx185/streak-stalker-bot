@@ -23,12 +23,12 @@ MODAL_FIELDS = [{
     'key_name': "end_date"
 },
     {
-    'label': "Hashtag",
+    'label': "Hashtags",
     'placeholder': '#YourChallengeHashtag',
     'default': '',
     'required': True,
     'row': 4,
-    'key_name': "hashtag"
+    'key_name': "hashtags"
 },
     {
     'label': "Platform (only one)",

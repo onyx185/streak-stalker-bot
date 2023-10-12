@@ -8,6 +8,7 @@ import uuid
 from src.data.create_challenge import MODAL_FIELDS
 from src.types.create_challenge_types import ChallengeDocType
 from src.database.create_challenge import insert_challenge
+from src.database.parse_url import parse_hashtags
 
 
 class ViewChannels(discord.ui.View):
@@ -70,15 +71,21 @@ class ChallengeModal(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         doc: ChallengeDocType = {}
+
         for field in interaction.data['components']: 
             key = str(field['components'][0]['custom_id']).strip()
             value = str(field['components'][0]['value']).strip()
-            doc[key]= value
-        doc['challenge_id']= str(uuid.uuid4())
-        doc['created_by']= interaction.user.id
+            doc[key] = value
+
+
+        doc['hashtags'] = parse_hashtags(doc['hashtags'])
+        doc['challenge_id'] = str(uuid.uuid4())
+        doc['server_id'] = interaction.guild_id
+        doc['created_by'] = interaction.user.id
         doc['created_date'] = datetime.utcnow().isoformat() + "Z"
         response = insert_challenge(doc)
-        print(response)
+
+
         await interaction.response.send_message("Challenge Registered")
             
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:

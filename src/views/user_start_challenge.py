@@ -34,10 +34,10 @@ class ChallengesDropDown(discord.ui.Select):
         # accessing challenge_id using challenge name
         challenge_id = self.challenges_from_db[self.values[0]]
 
-        already_joined = UserChallenge_check.is_user_enrolled(challenge_id=challenge_id)
+        already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
 
 
-        if already_joined:
+        if already_joined['enrolled']:
             # if already joined user cannot join again
             embed = discord.Embed(title=interaction.user.name, color=discord.Colour.red())
             embed.add_field(name=f"",
@@ -55,10 +55,10 @@ class ChallengesDropDown(discord.ui.Select):
                 channel_id=int(interaction.channel_id)
             )
 
-            required_hastags = self.challenge_details.get_eligible_hastags(challenge_id=challenge_id)
+            required_hashtags = self.challenge_details.get_eligible_hastags(challenge_id=challenge_id)
 
             rules = ["Post an updated on the challenge on daily basis using **$PostUpdate challenge_name** command",
-                     f"Use {' '.join(required_hastags)} while posting update",
+                     f"Use {' '.join(required_hashtags)} while posting update",
                      "Maintain Streak to complete the Challenge"]
 
             embed = discord.Embed(title=data['Username'], color=discord.Colour.green())

@@ -11,7 +11,7 @@ from src.database.user_data import ChallengeDetails, UserPostUpdate
 
 
 class PostUpdateModal(discord.ui.Modal):
-    def __init__(self, username,challenge_id, *args, **kwargs) -> None:
+    def __init__(self, username, challenge_id, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         username = username
@@ -21,7 +21,7 @@ class PostUpdateModal(discord.ui.Modal):
 
         self.add_item(discord.ui.TextInput(label=self.all_fields[0], placeholder="Discord Username",
                                            default=username, required=True))
-        self.add_item(discord.ui.TextInput(label=self.all_fields[1], placeholder="Enter eligible hastags",
+        self.add_item(discord.ui.TextInput(label=self.all_fields[1], placeholder="Enter eligible hashtags",
                                            required=False))
         self.add_item(discord.ui.TextInput(label=self.all_fields[2], placeholder="Social Media Links",
                                            required=False))
@@ -32,11 +32,11 @@ class PostUpdateModal(discord.ui.Modal):
     async def on_submit(self, interaction):
         eligible_hastags = ChallengeDetails(server_id=
                                             interaction.guild_id).get_eligible_hastags(
-                        challenge_id=self.challenge_id)
+            challenge_id=self.challenge_id)
 
         data = {}
         data['discord_user'] = interaction.user.name
-        data['challenge_id'] = int(self.challenge_id)
+        data['challenge_id'] = str(self.challenge_id)
         data['discord_user_id'] = interaction.user.id
         data['submitted_in_channel'] = interaction.channel.name
         data['submited_date'] = datetime.now(tz=timezone(timedelta(hours=5, minutes=30)))
@@ -44,9 +44,9 @@ class PostUpdateModal(discord.ui.Modal):
         for ind, field in enumerate(self.all_fields):
             data[field.lower().replace(" ", "_")] = interaction.data['components'][ind]['components'][0]['value']
 
-        given_hastags = parse_hashtags(data['hashtags'])
+        given_hashtags = parse_hashtags(data['hashtags'])
 
-        if (len(set(eligible_hastags).difference(set(given_hastags))))==0:
+        if (len(set(eligible_hastags).difference(set(given_hashtags)))) == 0:
             # add record to database
             post_det = UserPostUpdate(server_id=interaction.guild_id, user_id=interaction.user.id)
             post_det.add_post_update(challenge_id=self.challenge_id, data=data)
@@ -103,15 +103,15 @@ class ChallengesDropDownForPostingUpdate(discord.ui.Select):
         # accessing challenge_id using challenge name
         challenge_id = self.challenges_from_db[self.values[0]]
 
-        already_joined = UserChallenge_check.is_user_enrolled(challenge_id=challenge_id)
+        already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
 
-        if already_joined:
+        if already_joined['enrolled'] and already_joined['enrolled'] == 'active':
             eligible_to_post = UserChallenge_check.eligible_to_post(challenge_id=challenge_id)
 
             if eligible_to_post:
                 await interaction.response.send_modal(PostUpdateModal(username=interaction.user.name,
                                                                       challenge_id=challenge_id,
-                                                                  title="Daily Updates"))
+                                                                      title="Daily Updates"))
             else:
                 if UserChallenge_check.kick_out:
                     # if already joined user cannot join again

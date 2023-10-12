@@ -1,5 +1,3 @@
-
-
 from src.types.create_challenge_types import ChallengeDocType
 from src.database.database import challenges_collection
 
