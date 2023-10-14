@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Dict
 from datetime import datetime
 
 ContextInfoType = TypedDict(
@@ -18,4 +18,8 @@ class ChallengeDocType(TypedDict):
     platform: str
     created_by: int
     created_date: str
-
+    
+class InsertChallengeResponse(TypedDict):
+    doc: ChallengeDocType
+    is_inserted: bool
+    message: str

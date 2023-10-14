@@ -43,7 +43,7 @@ class SelectChannels(discord.ui.Select):
                 ChallengeModal(self.ctx, selected_option, title=modal_title))
         except Exception as e:
             print(f'{e}')
-
+    
     def get_selected_option(self):
         selected_option = {}
         for option in self.options:
@@ -70,22 +70,32 @@ class ChallengeModal(discord.ui.Modal):
                                                custom_id=field['key_name']))
 
     async def on_submit(self, interaction: discord.Interaction):
-        doc: ChallengeDocType = {}
+        try:
+            doc: ChallengeDocType = {}
 
-        for field in interaction.data['components']:
-            key = str(field['components'][0]['custom_id']).strip()
-            value = str(field['components'][0]['value']).strip()
-            doc[key] = value
+            for field in interaction.data['components']:
+                key = str(field['components'][0]['custom_id']).strip()
+                value = str(field['components'][0]['value']).strip()
+                doc[key] = value
 
-        doc['hashtags'] = parse_hashtags(doc['hashtags'])
-        doc['challenge_id'] = str(uuid.uuid4())
-        doc['server_id'] = interaction.guild_id
-        doc['channel_id'] = self.channel_id
-        doc['created_by'] = interaction.user.id
-        doc['created_date'] = datetime.utcnow().isoformat() + "Z"
-        response = insert_challenge(doc)
+                doc['hashtags'] = parse_hashtags(doc['hashtags'])
+                doc['challenge_id'] = str(uuid.uuid4())
+                doc['server_id'] = interaction.guild_id
+                doc['channel_id'] = self.channel_id
+                doc['created_by'] = interaction.user.id
+                doc['created_date'] = datetime.utcnow().isoformat() + "Z"
+                response = insert_challenge(doc)
 
-        await interaction.response.send_message("Challenge Registered")
+                if(response['is_inserted']):
+                    embed = discord.Embed(title="Challenge Created", description= "The challenge has been created. Participants can accept and post update messages once the challenge starts.",color=discord.Colour.green())
+                    embed.add_field(name="Challenge Name", value=response['doc']['challenge_name'], inline=False)
+                    embed.add_field(name="Start Date", value=response['doc']['start_date'], inline=False)
+                    embed.add_field(name="End Date", value=response['doc']['end_date'], inline=False)
+                    return await interaction.response.send_message('', embed=embed)
+                else:
+                    return await interaction.response.send_message(response['message'])
+        except Exception as e:
+            await interaction.response.send_message("Something went wrong, try again.")
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         print(error)
