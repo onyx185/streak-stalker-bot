@@ -39,6 +39,7 @@ class ReportsDrowpDown(discord.ui.Select):
         if report_obj.data_present:
 
             dataframe = report_obj.get_report()
+            dataframe_user_post = report_obj.get_users_posts_details()
 
             try:
                 user_id = dataframe['User ID'].to_list()
@@ -47,8 +48,6 @@ class ReportsDrowpDown(discord.ui.Select):
                     user_name = await self.ctx.guild.fetch_member(id_)
                     user_name_all.append(user_name.name)
 
-                print(user_name_all)
-
                 dataframe['Discord User Name'] = user_name_all
             except:
                 pass
@@ -56,7 +55,8 @@ class ReportsDrowpDown(discord.ui.Select):
             excel_buffer = io.BytesIO()
 
             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                dataframe.to_excel(writer, sheet_name='Sheet1', index=False)
+                dataframe.to_excel(writer, sheet_name='Report', index=False)
+                dataframe_user_post.to_excel(writer, sheet_name='Users Posts', index=False)
 
             excel_buffer.seek(0)
 

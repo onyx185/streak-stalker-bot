@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from src.database.database import challenges_collection, UsersChallenges_collection
+from src.database.database import challenges_collection, UsersChallenges_collection, UsersStreak_collection
 import operator
 import numpy as np
 
@@ -54,6 +54,45 @@ class GetReport:
                      'Challenge End Date', 'Challenge Status', 'Last Active', 'Is Eligible']
 
         return df_final[col_order]
+
+    def get_users_posts_details(self):
+
+        if self.challenge_id == 0:
+            users_post = UsersStreak_collection.find({'server_id': self.server_id}, {'_id': 0})
+        else:
+            users_post = UsersStreak_collection.find({'server_id': self.server_id, 'challenge_id': self.challenge_id},
+                                                    {'_id': 0})
+
+        users_post_list = list(users_post)
+
+        if users_post_list:
+            df_users_Post = pd.DataFrame(users_post_list)
+
+            df_challenge_deatils = self._get_challenges_details(challenge_id=self.challenge_id)
+            df_final = df_users_Post.merge(df_challenge_deatils[['challenge_id', 'challenge_name']], on='challenge_id')
+
+            df_final = df_final.rename(columns={
+                'user_id': "User ID",
+                'submitted_date': "Submitted Date",
+                'hashtags': "Hashtags",
+                'social_media_links': "Media Links",
+                'message': "Message",
+                'discord_user': 'Discord User Name',
+                'submitted_in_channel': "Submitted in channel",
+                'media_content': 'Media Content',
+                'challenge_name': 'Challenge Participated'
+            })
+
+            col_order = ['User ID', 'Discord User Name', 'Challenge Participated',
+                         'Submitted Date', 'Submitted in channel', 'Hashtags', 'Media Links',
+                         'Media Content','Message']
+
+            return df_final[col_order]
+        else:
+            df_users_Post = pd.DataFrame()
+
+
+        return df_users_Post
 
     def _get_users_details(self, challenge_id):
         if challenge_id == 0:

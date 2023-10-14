@@ -37,9 +37,10 @@ class PostUpdateModal(discord.ui.Modal):
         data = {}
         data['discord_user'] = interaction.user.name
         data['challenge_id'] = str(self.challenge_id)
+        data['server_id'] = int(interaction.guild_id)
         data['user_id'] = interaction.user.id
         data['submitted_in_channel'] = interaction.channel.name
-        data['submited_date'] = datetime.now(tz=timezone(timedelta(hours=5, minutes=30)))
+        data['submitted_date'] = datetime.now(tz=timezone(timedelta(hours=5, minutes=30)))
 
         for ind, field in enumerate(self.all_fields):
             data[field.lower().replace(" ", "_")] = interaction.data['components'][ind]['components'][0]['value']
