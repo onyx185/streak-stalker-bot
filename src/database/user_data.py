@@ -191,7 +191,7 @@ class UserPostUpdate(UserChallenges):
             # update last post date
             update_operation = {
                 '$set': {
-                    'last_posted_date': data['submited_date']
+                    'last_posted_date': data['submitted_date']
                 }
             }
 

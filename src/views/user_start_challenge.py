@@ -60,7 +60,7 @@ class ChallengesDropDown(discord.ui.Select):
 
                 required_hashtags = self.challenge_details.get_eligible_hastags(challenge_id=challenge_id)
 
-                rules = ["Post an updated on the challenge on daily basis using **$PostUpdate challenge_name** command",
+                rules = ["Post an updated on the challenge on daily basis using **$PostUpdate** command",
                          f"Use {' '.join(required_hashtags)} while posting update",
                          "Maintain Streak to complete the Challenge"]
 
