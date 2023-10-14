@@ -27,7 +27,9 @@ class ChallengeDetails:
 
         if result:
             for res in result:
-                challenges[res['challenge_name']] = res['challenge_id']
+                challenges[res['challenge_name']] = {}
+                challenges[res['challenge_name']]['challenge_id'] = res['challenge_id']
+                challenges[res['challenge_name']]['channel_id'] = res['channel_id']
 
         return challenges
 

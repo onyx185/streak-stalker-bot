@@ -28,6 +28,16 @@ class UserAlerts:
 
         return user_ids_and_challenge_ids
 
+    def get_today_posted_members(self):
+        query = {'last_posted_date': self.today}
+
+        results = UsersChallenges_collection.find(query)
+
+        if results:
+            return len(list(results))
+        else:
+            return 0
+
     def _get_challenges_name(self, challenge_ids: list) -> list:
 
         query = {
