@@ -13,12 +13,12 @@ class Alerts(commands.Cog):
     def cog_unload(self) -> None:
         self.check_user_last_post_and_send_alert.stop()
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(hours=5)
     async def check_user_last_post_and_send_alert(self):
         current_time = datetime.now(tz=timezone(timedelta(hours=5, minutes=30))).strftime('%H')
 
-        # if current_time in REMINDER_TIME_FOR_ALERT_IN_24H_FORMAT:
-        if True:
+        if current_time in REMINDER_TIME_FOR_ALERT_IN_24H_FORMAT:
+        # if True:
             user_details = UserAlerts().get_not_posted_users_details()
 
             for user_id, challenge_name in zip(user_details['user_id'], user_details['challenge_name']):
