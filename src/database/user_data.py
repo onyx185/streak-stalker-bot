@@ -1,30 +1,35 @@
 from src.database.parse_url import parse_hashtags, parse_urls, find_social_media, parse_linkdein_url
-from src.database.database import UsersChallenges_collection, UsersStreak_collection
+from src.database.database import UsersChallenges_collection, UsersStreak_collection, challenges_collection
 from datetime import datetime, timedelta, timezone
 import json
 
-with open("./src/database/dummydata.json", 'r') as file:
-    dummy_data = json.loads(file.read())
 
+def get_servers_registered_for_challenge(server_id: int | str):
+    query = {'server_id': server_id}
+    result = challenges_collection.find_one(query)
 
-def get_servers_registered_for_challenge(server_id: int|str):
-    for dum in dummy_data:
-        if str(server_id) in dum['server_id']:
-            return True
+    if result:
+        return True
 
     return False
 
+
 class ChallengeDetails:
     def __init__(self, server_id: str | int):
-        self.server_id = str(server_id)
+        self.server_id = server_id
 
     def get_challenges(self) -> dict:
 
         challenges = {}
 
-        for dum in dummy_data:
-            if dum['server_id'] == self.server_id:
-                challenges[dum['challenge_name']] = dum['challenge_id']
+        query = {'server_id': self.server_id}
+        result = challenges_collection.find(query)
+
+        if result:
+            for res in result:
+                challenges[res['challenge_name']] = {}
+                challenges[res['challenge_name']]['challenge_id'] = res['challenge_id']
+                challenges[res['challenge_name']]['channel_id'] = res['channel_id']
 
         return challenges
 
@@ -32,19 +37,23 @@ class ChallengeDetails:
 
         dates = {}
 
-        for dum in dummy_data:
-            if dum['challenge_id'] == challenge_id:
-                dates['start_date'] = dum['start_date']
-                dates['end_date'] = dum['end_date']
+        query = {'challenge_id': challenge_id}
+        result = challenges_collection.find_one(query)
+
+        if result:
+            dates['start_date'] = result['start_date']
+            dates['end_date'] = result['end_date']
 
         return dates
 
-    def get_eligible_hastags(self, challenge_id: int | str) -> dict:
+    def get_eligible_hastags(self, challenge_id: int | str) -> list:
         hastags = []
 
-        for dum in dummy_data:
-            if dum['challenge_id'] == challenge_id:
-                hastags = dum['hastags']
+        query = {'challenge_id': challenge_id}
+        result = challenges_collection.find_one(query)
+
+        if result:
+            return result['hashtags']
 
         return hastags
 
@@ -54,23 +63,37 @@ class UserChallenges:
         self.server_id = server_id
         self.user_id = user_id
 
-    def is_user_enrolled(self, challenge_id: int | str):
+    def is_user_enrolled_and_active(self, challenge_id: int | str):
         try:
-            query = {'challenge_id': int(challenge_id), 'user_id': int(self.user_id)}
+            query = {'challenge_id': challenge_id, 'user_id': int(self.user_id)}
             result = UsersChallenges_collection.find_one(query)
 
+            status = {}
+
             if result:
-                return True
-            return False
-        except:
-            return True
+                status['enrolled'] = True
+                status['active'] = result['status']
+
+                return status
+            else:
+                status['enrolled'] = False
+                status['active'] = 'inactive'
+
+                return status
+
+        except Exception as e:
+            print(e)
+
+            status = {'enrolled': False, 'active': 'inactive'}
+
+            return status
 
     def add_challenge_to_user(self, channel_id: int, challenge_id: int | str):
         data = {}
 
         data['user_id'] = int(self.user_id)
         data['server_id'] = int(self.server_id)
-        data['challenge_id'] = int(challenge_id)
+        data['challenge_id'] = str(challenge_id)
         data['channel_id'] = int(channel_id)
         data['status'] = 'active'
         data['last_posted_date'] = None  # when challenge is added date will be none
@@ -79,6 +102,22 @@ class UserChallenges:
             inserted = UsersChallenges_collection.insert_one(data)
         except Exception as e:
             print(e)
+
+        return True
+
+    def change_status(self, challenge_id: int | str):
+
+        filter_condition = {'user_id': int(self.user_id),
+                            'challenge_id': str(challenge_id)}
+
+        # update last post date
+        update_operation = {
+            '$set': {
+                'status': 'inactive'
+            }
+        }
+
+        UsersChallenges_collection.update_one(filter_condition, update_operation)
 
         return True
 
@@ -91,7 +130,7 @@ class UserPostUpdate(UserChallenges):
 
     def eligible_to_post(self, challenge_id):
         try:
-            query = {'challenge_id': int(challenge_id), 'user_id': int(self.user_id)}
+            query = {'challenge_id': str(challenge_id), 'user_id': int(self.user_id), 'status': 'active'}
             projection = {'last_posted_date': 1}
 
             # check the last_post_date
@@ -147,13 +186,12 @@ class UserPostUpdate(UserChallenges):
             # to update last post date
             # "where" condition
             filter_condition = {'user_id': int(self.user_id),
-                                'challenge_id': int(challenge_id)}
-
+                                'challenge_id': str(challenge_id)}
 
             # update last post date
             update_operation = {
                 '$set': {
-                    'last_posted_date': data['submited_date']
+                    'last_posted_date': data['submitted_date']
                 }
             }
 
@@ -163,5 +201,3 @@ class UserPostUpdate(UserChallenges):
             print(e)
 
         return True
-
-# 1110758349127028737 - user_id

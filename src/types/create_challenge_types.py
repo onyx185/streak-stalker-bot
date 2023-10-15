@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Dict, List
 from datetime import datetime
 
 ContextInfoType = TypedDict(
@@ -10,11 +10,16 @@ ChannelOptionType = TypedDict(
 class ChallengeDocType(TypedDict):
     challenge_id: str
     server_id: int
-    challenge_name : str
+    channel_id: int
+    challenge_name: str
     start_date: str
     end_date: str
-    hashtag: str
+    hashtags: List[str]
     platform: str
     created_by: int
     created_date: str
-
+    
+class InsertChallengeResponse(TypedDict):
+    doc: ChallengeDocType
+    is_inserted: bool
+    message: str

@@ -7,7 +7,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True  # in order to access the messages
 
-# commands with '$' prefix is used to call the bot for specific operation
+# commands with '&' prefix is used to call the bot for specific operation
 client = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 
