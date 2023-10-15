@@ -1,15 +1,9 @@
 import re
-import time
 import datetime
 from src.types.create_challenge_types import ChallengeDocType, InsertChallengeResponse
 from src.database.database import challenges_collection
 from src.constant import *
-
-def get_date(date_str:str, separator: str):
-    #dd-mm-yyyy
-    date_arr = date_str.split(separator)
-    return datetime.date(int(date_arr[2]),int(date_arr[1]), int(date_arr[0]))
-
+from src.utils.dates import get_date
 
 def is_date_valid(start_date: str, end_date: str):
     try:

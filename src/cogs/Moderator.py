@@ -19,7 +19,14 @@ class ModeratorCog(commands.Cog):
         try:
             await ctx.send(view=ModMenuView(ctx))
         except Exception as e:
-            print("no role")
+            print(e)
+    
+    @commands.command()
+    async def getStats(self, ctx: commands.context):
+        try:
+            await ctx.send(view=ModMenuView(ctx))
+        except Exception as e:
+            print( e)
 
 
 async def setup(client: commands.Bot):

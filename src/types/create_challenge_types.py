@@ -1,4 +1,4 @@
-from typing import TypedDict, Dict
+from typing import TypedDict, Dict, List
 from datetime import datetime
 
 ContextInfoType = TypedDict(
@@ -13,7 +13,7 @@ class ChallengeDocType(TypedDict):
     challenge_name: str
     start_date: str
     end_date: str
-    hashtags: str
+    hashtags: List[str]
     platform: str
     created_by: int
     created_date: str
