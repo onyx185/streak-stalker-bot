@@ -27,7 +27,7 @@ class StartChallenge(commands.Cog):
             )
 
             embed.add_field(name=f"Oh no challenges",
-                            value="This server has no challenges created. Please create challenges.")
+                            value="This server has no challenges created.")
             await ctx.send(embed=embed)
 
     @commands.command()

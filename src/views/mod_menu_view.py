@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from src.views.create_challenge import ViewChannels
+from src.views.reports_view import ReportForChallenges
 from src.database.get_stats import get_stats
 import io
 import base64
@@ -31,3 +32,12 @@ class ModMenuView(discord.ui.View):
             return await self.ctx.send(file=file)
         except Exception as e:
             await self.ctx.send('Something went wrong, try again.')
+
+    @discord.ui.button(label="Get Report", row=0, style=discord.ButtonStyle.primary)
+    async def get_report(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        button.disabled = True
+        button.style = discord.ButtonStyle.gray
+
+        await self.ctx.send('', view=ReportForChallenges(self.ctx))
+        await interaction.response.edit_message(view=self)

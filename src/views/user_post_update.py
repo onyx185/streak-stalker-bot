@@ -37,9 +37,10 @@ class PostUpdateModal(discord.ui.Modal):
         data = {}
         data['discord_user'] = interaction.user.name
         data['challenge_id'] = str(self.challenge_id)
-        data['discord_user_id'] = interaction.user.id
+        data['server_id'] = int(interaction.guild_id)
+        data['user_id'] = interaction.user.id
         data['submitted_in_channel'] = interaction.channel.name
-        data['submited_date'] = datetime.now(tz=timezone(timedelta(hours=5, minutes=30)))
+        data['submitted_date'] = datetime.now(tz=timezone(timedelta(hours=5, minutes=30)))
 
         for ind, field in enumerate(self.all_fields):
             data[field.lower().replace(" ", "_")] = interaction.data['components'][ind]['components'][0]['value']
@@ -78,6 +79,7 @@ class PostUpdateModal(discord.ui.Modal):
 
 class ChallengesDropDownForPostingUpdate(discord.ui.Select):
     def __init__(self, ctx):
+        self.ctx = ctx
         self.server_id = ctx.guild.id
         self.user_id = ctx.author.id
 
@@ -101,38 +103,52 @@ class ChallengesDropDownForPostingUpdate(discord.ui.Select):
         )
 
         # accessing challenge_id using challenge name
-        challenge_id = self.challenges_from_db[self.values[0]]
+        challenge_id = self.challenges_from_db[self.values[0]]['challenge_id']
+        channel_id = self.challenges_from_db[self.values[0]]['channel_id']
 
-        already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
+        if int(channel_id) == int(interaction.channel_id):
 
-        if already_joined['enrolled'] and already_joined['enrolled'] == 'active':
-            eligible_to_post = UserChallenge_check.eligible_to_post(challenge_id=challenge_id)
+            already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
 
-            if eligible_to_post:
-                await interaction.response.send_modal(PostUpdateModal(username=interaction.user.name,
-                                                                      challenge_id=challenge_id,
-                                                                      title="Daily Updates"))
-            else:
-                if UserChallenge_check.kick_out:
-                    # if already joined user cannot join again
-                    embed = discord.Embed(title="Oops!!, You lost the Streak", color=discord.Colour.red())
-                    embed.add_field(name=f"",
-                                    value=f"{interaction.user.name}, Sorry you are not eligible to post update on this"
-                                          f" {self.values[0]} challenge as you have lost the streak.")
+            if already_joined['enrolled'] and already_joined['active'] == 'active':
+                eligible_to_post = UserChallenge_check.eligible_to_post(challenge_id=challenge_id)
 
-                    await interaction.response.send_message("", embed=embed)
+                if eligible_to_post:
+                    await interaction.response.send_modal(PostUpdateModal(username=interaction.user.name,
+                                                                          challenge_id=challenge_id,
+                                                                          title="Daily Updates"))
                 else:
-                    embed = discord.Embed(title=interaction.user.name, color=discord.Colour.blue())
-                    embed.add_field(name=f"",
-                                    value=f"You have already posted update for the day. Comeback tmorrow.")
+                    if UserChallenge_check.kick_out:
+                        # if already joined user cannot join again
+                        embed = discord.Embed(title="Oops!!, You lost the Streak", color=discord.Colour.red())
+                        embed.add_field(name=f"",
+                                        value=f"{interaction.user.name}, Sorry you are not eligible to post update on this"
+                                              f" {self.values[0]} challenge as you have lost the streak.")
 
-                    await interaction.response.send_message("", embed=embed)
+                        await interaction.response.send_message("", embed=embed)
+                    else:
+                        embed = discord.Embed(title=interaction.user.name, color=discord.Colour.blue())
+                        embed.add_field(name=f"",
+                                        value=f"You have already posted update for the day. Comeback tmorrow.")
 
+                        await interaction.response.send_message("", embed=embed)
+
+            else:
+                # if not joined the challenge cannot post update
+                embed = discord.Embed(title=interaction.user.name, color=discord.Colour.red())
+                embed.add_field(name=f"",
+                                value=f"You have not enrolled for this {self.values[0]} challenge")
+
+                await interaction.response.send_message("", embed=embed)
         else:
-            # if not joined the challenge cannot post update
-            embed = discord.Embed(title=interaction.user.name, color=discord.Colour.red())
-            embed.add_field(name=f"",
-                            value=f"You have not enrolled for this {self.values[0]} challenge")
+            channel_name = self.ctx.guild.get_channel(channel_id)
+
+            embed = discord.Embed(title="Wrong Channel", color=discord.Colour.red())
+
+            embed.add_field(name="",
+                            value=f"You are not allowed to post update on this channel, please post update "
+                                  f"in #{channel_name} channel",
+                            inline=True)
 
             await interaction.response.send_message("", embed=embed)
 

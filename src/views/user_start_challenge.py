@@ -9,6 +9,7 @@ from src.database.user_data import ChallengeDetails, UserChallenges
 
 class ChallengesDropDown(discord.ui.Select):
     def __init__(self, ctx):
+        self.ctx = ctx
         self.server_id = ctx.guild.id
         self.user_id = ctx.author.id
 
@@ -32,7 +33,8 @@ class ChallengesDropDown(discord.ui.Select):
                                     )
 
         # accessing challenge_id using challenge name
-        challenge_id = self.challenges_from_db[self.values[0]]
+        challenge_id = self.challenges_from_db[self.values[0]]['challenge_id']
+        channel_id = self.challenges_from_db[self.values[0]]['channel_id']
 
         already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
 
@@ -45,36 +47,50 @@ class ChallengesDropDown(discord.ui.Select):
 
             await interaction.response.send_message("", embed=embed)
         else:
-            data = {}
+            if int(channel_id) == int(interaction.channel_id):
+                data = {}
 
-            data['Username'] = interaction.user.name
-            data['ChallengeChoosen'] = self.values[0]
+                data['Username'] = interaction.user.name
+                data['ChallengeChoosen'] = self.values[0]
 
-            UserChallenge_check.add_challenge_to_user(
-                challenge_id=challenge_id,
-                channel_id=int(interaction.channel_id)
-            )
+                UserChallenge_check.add_challenge_to_user(
+                    challenge_id=challenge_id,
+                    channel_id=int(interaction.channel_id)
+                )
 
-            required_hashtags = self.challenge_details.get_eligible_hastags(challenge_id=challenge_id)
+                required_hashtags = self.challenge_details.get_eligible_hastags(challenge_id=challenge_id)
 
-            rules = ["Post an updated on the challenge on daily basis using **$PostUpdate challenge_name** command",
-                     f"Use {' '.join(required_hashtags)} while posting update",
-                     "Maintain Streak to complete the Challenge"]
+                rules = ["Post an updated on the challenge on daily basis using **$PostUpdate** command",
+                         f"Use {' '.join(required_hashtags)} while posting update",
+                         "Maintain Streak to complete the Challenge"]
 
-            embed = discord.Embed(title=data['Username'], color=discord.Colour.green())
+                embed = discord.Embed(title=data['Username'], color=discord.Colour.green())
 
-            embed.add_field(name="",
-                            value=f"You have now started the {data['ChallengeChoosen']}   🎉",
-                            inline=True)
+                embed.add_field(name="",
+                                value=f"You have now started the {data['ChallengeChoosen']}   🎉",
+                                inline=True)
 
-            embed.add_field(name="  ", value="   ", inline=False)
+                embed.add_field(name="  ", value="   ", inline=False)
 
-            embed.add_field(name="Rules", value="", inline=False)
+                embed.add_field(name="Rules", value="", inline=False)
 
-            for ind, msg in enumerate(rules):
-                embed.add_field(name='', value='✅ ' + msg, inline=False)
+                for ind, msg in enumerate(rules):
+                    embed.add_field(name='', value='✅ ' + msg, inline=False)
 
-            await interaction.response.send_message("", embed=embed)
+                await interaction.response.send_message("", embed=embed)
+            else:
+
+                channel_name = self.ctx.guild.get_channel(channel_id)
+
+                embed = discord.Embed(title="Wrong Channel", color=discord.Colour.red())
+
+                embed.add_field(name="",
+                                value=f"You are not allowed to start challenge in this channel, please create challenge "
+                                      f"in #{channel_name} channel",
+                                inline=True)
+
+                await interaction.response.send_message("", embed=embed)
+
 
 class ChallengesList(discord.ui.View):
 

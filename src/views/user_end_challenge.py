@@ -12,6 +12,7 @@ from src.database.user_data import ChallengeDetails, UserPostUpdate
 
 class EndChallengeDropDown(discord.ui.Select):
     def __init__(self, ctx):
+        self.ctx = ctx
         self.server_id = ctx.guild.id
         self.user_id = ctx.author.id
 
@@ -35,38 +36,52 @@ class EndChallengeDropDown(discord.ui.Select):
         )
 
         # accessing challenge_id using challenge name
-        challenge_id = self.challenges_from_db[self.values[0]]
+        challenge_id = self.challenges_from_db[self.values[0]]['challenge_id']
+        channel_id = self.challenges_from_db[self.values[0]]['channel_id']
 
-        already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
+        if int(channel_id) == int(interaction.channel_id):
+            already_joined = UserChallenge_check.is_user_enrolled_and_active(challenge_id=challenge_id)
 
-        if already_joined['enrolled']:
+            if already_joined['enrolled']:
 
-            if already_joined['active'] == "active":
+                if already_joined['active'] == "active":
 
-                # changing status to inactive
-                UserChallenge_check.change_status(challenge_id=challenge_id)
+                    # changing status to inactive
+                    UserChallenge_check.change_status(challenge_id=challenge_id)
 
-                # if already joined user cannot join again
-                embed = discord.Embed(title="End Challenge", color=discord.Colour.red())
-                embed.add_field(name=f"",
-                                value=f"{interaction.user.name}, You have opted to end **{self.values[0]}** challenge."
-                                      f"You will no longer be eligible to post updates regarding this challenge")
-                await interaction.response.send_message("", embed=embed)
+                    # if already joined user cannot join again
+                    embed = discord.Embed(title="End Challenge", color=discord.Colour.red())
+                    embed.add_field(name=f"",
+                                    value=f"{interaction.user.name}, You have opted to end **{self.values[0]}** challenge."
+                                          f"You will no longer be eligible to post updates regarding this challenge")
+                    await interaction.response.send_message("", embed=embed)
+                else:
+                    embed = discord.Embed(title=interaction.user.name, color=discord.Colour.blue())
+                    embed.add_field(name=f"",
+                                    value=f"You have already ended this challenge")
+
+                    await interaction.response.send_message("", embed=embed)
+
             else:
-                embed = discord.Embed(title=interaction.user.name, color=discord.Colour.blue())
+                # if not joined the challenge cannot post update
+                embed = discord.Embed(title=interaction.user.name, color=discord.Colour.red())
                 embed.add_field(name=f"",
-                                value=f"You have already ended this challenge")
+                                value=f"You have not enrolled for **{self.values[0]}** challenge, "
+                                      f"and you will not be able to end this")
 
                 await interaction.response.send_message("", embed=embed)
-
         else:
-            # if not joined the challenge cannot post update
-            embed = discord.Embed(title=interaction.user.name, color=discord.Colour.red())
-            embed.add_field(name=f"",
-                            value=f"You have not enrolled for **{self.values[0]}** challenge, "
-                                  f"and you will not be able to end this")
+            channel_name = self.ctx.guild.get_channel(channel_id)
+
+            embed = discord.Embed(title="Wrong Channel", color=discord.Colour.red())
+
+            embed.add_field(name="",
+                            value=f"You are not allowed to end challenge on this channel, please try "
+                                  f"in #{channel_name} channel",
+                            inline=True)
 
             await interaction.response.send_message("", embed=embed)
+
 
 
 class EndChallengeView(discord.ui.View):
