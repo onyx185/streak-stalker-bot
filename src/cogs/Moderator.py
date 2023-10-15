@@ -20,14 +20,6 @@ class ModeratorCog(commands.Cog):
             await ctx.send(view=ModMenuView(ctx))
         except Exception as e:
             print(e)
-    
-    @commands.command()
-    async def getStats(self, ctx: commands.context):
-        try:
-            await ctx.send(view=ModMenuView(ctx))
-        except Exception as e:
-            print( e)
-
 
 async def setup(client: commands.Bot):
     await client.add_cog(ModeratorCog(client))

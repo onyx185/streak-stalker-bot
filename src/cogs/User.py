@@ -6,7 +6,7 @@ from src.views.user_end_challenge import EndChallengeView
 from src.database.user_data import get_servers_registered_for_challenge
 
 
-class StartChallenge(commands.Cog):
+class UserCog(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -66,4 +66,4 @@ class StartChallenge(commands.Cog):
 
 
 async def setup(client):
-    await client.add_cog(StartChallenge(client))
+    await client.add_cog(UserCog(client))
